@@ -40,3 +40,22 @@
 .read-the-docs {
   color: #888;
 }
+.custom-shape-divider-top-1762852361 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+}
+
+.custom-shape-divider-top-1762852361 svg {
+    position: relative;
+    display: block;
+    width: calc(285% + 1.3px);
+    height: 245px;
+}
+
+.custom-shape-divider-top-1762852361 .shape-fill {
+    fill: #1bd99a96;
+}
