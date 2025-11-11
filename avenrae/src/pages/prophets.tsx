@@ -1,12 +1,16 @@
+import SearchFilters from "../components/SearchFilters";
+
 export default function Prophets() {
   return (
-    <div className="min-h-screen bg-white py-20 px-4">
+    <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-5xl font-bold mb-6 text-gray-800">Our Prophets</h1>
-        <p className="text-lg text-gray-600 mb-12">
+        <h1 className="text-4xl font-bold mb-4 text-gray-800">Our Prophets</h1>
+        <p className="text-lg text-gray-600 mb-6">
           Seek spiritual guidance and insight from our trusted prophetic practitioners.
         </p>
-        
+
+        <SearchFilters placeholder="Search prophets, topics or locations" />
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition">
