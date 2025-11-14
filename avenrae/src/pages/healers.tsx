@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import SearchFilters from "../components/SearchFilters";
-
 import reactLogo from "../assets/react.svg";
 
 export default function Healers() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-6xl mx-auto">
@@ -21,8 +23,10 @@ export default function Healers() {
                 <h3 className="text-xl font-bold text-gray-800">Healer {i}</h3>
               </div>
               <p className="text-gray-600 mb-4">Specialized in holistic wellness and energy healing.</p>
-              <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                Learn More
+              <button 
+                onClick={() => navigate("/booking")}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                Book Now
               </button>
             </div>
           ))}

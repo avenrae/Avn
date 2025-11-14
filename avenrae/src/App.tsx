@@ -8,6 +8,8 @@ import Mediums from "./pages/mediums";
 import Events from "./pages/Events";
 import Support from "./pages/support";
 import Store from "./pages/Store";
+import Booking from "./pages/Booking";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -22,6 +24,8 @@ export default function App() {
         <Route path="/events" element={<Events />} />
         <Route path="/support" element={<Support />} />
         <Route path="/store" element={<Store />} />
+        <Route path="/booking" element={<Booking />} />
+        <Route path="/auth" element={<Auth />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

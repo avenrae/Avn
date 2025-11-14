@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import SearchFilters from "../components/SearchFilters";
 import reactLogo from "../assets/react.svg";
 
 export default function Prophets() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-6xl mx-auto">
@@ -20,7 +23,9 @@ export default function Prophets() {
                 <h3 className="text-xl font-bold text-gray-800">Prophet {i}</h3>
               </div>
               <p className="text-gray-600 mb-4">Guided spiritual readings and prophetic counsel.</p>
-              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+              <button 
+                onClick={() => navigate("/booking")}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
                 Book Session
               </button>
             </div>

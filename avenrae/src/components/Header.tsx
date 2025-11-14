@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Header() {
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className="bg-white shadow-none sticky top-0 z-50">
       {/* Navigation Bar */}
       <nav className="flex items-center py-4 px-7 justify-between max-w-7xl mx-auto">
         <div className="flex items-center">
@@ -44,9 +44,20 @@ export default function Header() {
             </ul>
           </div>
         </div>
-        <button className="lg:flex hidden items-center py-3 px-5 bg-indigo-600 text-white rounded-lg transition-all duration-400 transform hover:scale-105 cursor-pointer hover:shadow-lg">
-          Log in
-        </button>
+        <div className="lg:flex hidden items-center space-x-3">
+          <Link
+            to="/auth"
+            className="py-1 px-4 bg-indigo-600 text-white rounded-lg transition-all duration-400 transform hover:scale-105 cursor-pointer hover:shadow-lg text-center"
+          >
+            Log in
+          </Link>
+          <Link
+            to="/auth"
+            className="py-1 px-4 border-2 border-indigo-600 text-indigo-600 rounded-lg font-semibold transition-all duration-400 transform hover:scale-105 cursor-pointer hover:bg-indigo-50 text-center"
+          >
+            Register
+          </Link>
+        </div>
       </nav>
     </header>
   );
