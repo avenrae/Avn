@@ -1,4 +1,5 @@
 import SearchFilters from "../components/SearchFilters";
+import reactLogo from "../assets/react.svg";
 
 export default function Mediums() {
   return (
@@ -14,8 +15,10 @@ export default function Mediums() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="bg-gradient-to-br from-pink-50 to-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition">
-              <div className="w-20 h-20 bg-pink-600 rounded-full mb-4"></div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Medium {i}</h3>
+              <div className="flex items-center space-x-4 mb-4">
+                <img src={reactLogo} alt={`Medium ${i}`} className="w-20 h-20 object-contain flex-shrink-0" />
+                <h3 className="text-xl font-bold text-gray-800">Medium {i}</h3>
+              </div>
               <p className="text-gray-600 mb-4">Spiritual channeling and mediumship services.</p>
               <button className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition">
                 Schedule Reading
