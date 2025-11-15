@@ -13,14 +13,15 @@ This document outlines the authentication system, user roles, database schema, a
 
 ### Backend (Recommended)
 - **Node.js 20+** with **Express.js** or **Fastify**
-- **Prisma ORM** - Database management
+- **Prisma ORM** - Database management with automatic migrations
 - **JWT (jsonwebtoken)** - Token-based authentication
-- **bcrypt** - Password hashing
+- **bcrypt** - Password hashing (12 rounds)
 - **Axios/Fetch** - HTTP client for geocoding
 
 ### Database
-- **PostgreSQL** - Primary database
-- **PostGIS** - Geospatial queries (find practitioners near users)
+- **PostgreSQL 15+** - Primary relational database
+- **PostGIS** - Geospatial extension for location-based queries
+- **Prisma Migrations** - Schema version control
 
 ---
 

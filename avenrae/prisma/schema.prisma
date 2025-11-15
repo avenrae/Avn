@@ -1,0 +1,294 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUMS ============
+
+enum UserRole {
+  client
+  practitioner
+}
+
+enum Specialization {
+  healer
+  prophet
+  medium
+  counselor
+  other
+}
+
+enum AvailabilityType {
+  in_person
+  online
+  both
+}
+
+enum MeetingType {
+  in_person
+  online
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  completed
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  refunded
+  failed
+}
+
+// ============ MODELS ============
+
+// Base User model
+model User {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String       @unique
+  passwordHash      String       @map("password_hash")
+  firstName         String       @map("first_name")
+  lastName          String       @map("last_name")
+  phone             String
+  role              UserRole
+  avatarUrl         String?      @map("avatar_url")
+  isActive          Boolean      @default(true) @map("is_active")
+  emailVerified     Boolean      @default(false) @map("email_verified")
+  emailVerifiedAt   DateTime?    @map("email_verified_at")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  deletedAt         DateTime?    @map("deleted_at")
+
+  // Relations
+  practitioner      Practitioner?
+  client            Client?
+  bookingsAsClient  Booking[]     @relation("ClientBookings")
+  reviews           Review[]
+  refreshTokens     RefreshToken[]
+  notifications     Notification[]
+  payments          PaymentTransaction[]
+
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+// Practitioners profile
+model Practitioner {
+  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String              @unique @db.Uuid @map("user_id")
+  specialization        Specialization
+  bio                   String
+  bioShort              String?             @map("bio_short")
+  rating                Decimal             @default(0) @db.Decimal(3, 2)
+  reviewCount           Int                 @default(0) @map("review_count")
+  serviceAddress        String              @map("service_address")
+  latitude              Decimal             @db.Decimal(10, 8)
+  longitude             Decimal             @db.Decimal(11, 8)
+  serviceRadiusKm       Int                 @default(50) @map("service_radius_km")
+  ratePerSession        Decimal             @map("rate_per_session") @db.Decimal(10, 2)
+  sessionDurationMinutes Int                @default(60) @map("session_duration_minutes")
+  availabilityType      AvailabilityType    @default(both) @map("availability_type")
+  isVerified            Boolean             @default(false) @map("is_verified")
+  verificationBadge     Boolean             @default(false) @map("verification_badge")
+  verificationDate      DateTime?           @map("verification_date")
+  yearsExperience       Int?                @map("years_experience")
+  certifications        String[]
+  languages             String[]
+  totalSessions         Int                 @default(0) @map("total_sessions")
+  responseTimeHours     Int?                @map("response_time_hours")
+  cancellationRate      Decimal             @default(0) @db.Decimal(5, 2) @map("cancellation_rate")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+  deletedAt             DateTime?           @map("deleted_at")
+
+  // Relations
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availabilitySlots     AvailabilitySlot[]
+  bookings              Booking[]           @relation("PractitionerBookings")
+  reviews               Review[]            @relation("PractitionerReviews")
+
+  @@index([userId])
+  @@index([specialization])
+  @@index([rating(sort: Desc)])
+  @@index([isVerified])
+  @@map("practitioners")
+}
+
+// Clients profile
+model Client {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String      @unique @db.Uuid @map("user_id")
+  preferredLocation String?     @map("preferred_location")
+  latitude          Decimal?    @db.Decimal(10, 8)
+  longitude         Decimal?    @db.Decimal(11, 8)
+  bio               String?
+  preferences       Json?       // e.g., { "preferred_specializations": ["healer", "medium"], "max_distance": 50 }
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("clients")
+}
+
+// Availability slots (recurring or one-time)
+model AvailabilitySlot {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  practitionerId  String        @db.Uuid @map("practitioner_id")
+  dayOfWeek       Int           @map("day_of_week") // 0=Sunday, 6=Saturday
+  startTime       DateTime      @db.Time @map("start_time")
+  endTime         DateTime      @db.Time @map("end_time")
+  isActive        Boolean       @default(true) @map("is_active")
+  breakTimes      Json?         @map("break_times") // e.g., [{ "start": "12:00", "end": "13:00" }]
+  exceptionDates  DateTime[]    @map("exception_dates") @db.Date
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  practitioner    Practitioner  @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
+
+  @@index([practitionerId])
+  @@index([dayOfWeek])
+  @@map("availability_slots")
+}
+
+// Bookings
+model Booking {
+  id                      String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId                String          @db.Uuid @map("client_id")
+  practitionerId          String          @db.Uuid @map("practitioner_id")
+  sessionDate             DateTime        @db.Date @map("session_date")
+  sessionStartTime        DateTime        @db.Time @map("session_start_time")
+  sessionEndTime          DateTime        @db.Time @map("session_end_time")
+  status                  BookingStatus   @default(pending)
+  notes                   String?
+  clientNotes             String?         @map("client_notes")
+  practitionerNotes       String?         @map("practitioner_notes")
+  serviceAmount           Decimal         @map("service_amount") @db.Decimal(10, 2)
+  platformFee             Decimal         @default(0) @map("platform_fee") @db.Decimal(10, 2)
+  totalAmount             Decimal         @map("total_amount") @db.Decimal(10, 2)
+  paymentStatus           PaymentStatus   @default(pending) @map("payment_status")
+  paymentMethod           String?         @map("payment_method") // 'card', 'paypal', 'bank_transfer'
+  stripePaymentIntentId   String?         @map("stripe_payment_intent_id")
+  meetingType             MeetingType     @map("meeting_type")
+  meetingLink             String?         @map("meeting_link") // For online sessions
+  cancellationReason      String?         @map("cancellation_reason")
+  cancelledBy             String?         @map("cancelled_by") // 'client' or 'practitioner'
+  cancelledAt             DateTime?       @map("cancelled_at")
+  completedAt             DateTime?       @map("completed_at")
+  createdAt               DateTime        @default(now()) @map("created_at")
+  updatedAt               DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  client                  User            @relation("ClientBookings", fields: [clientId], references: [id])
+  practitioner            Practitioner    @relation("PractitionerBookings", fields: [practitionerId], references: [id])
+  review                  Review?
+  payments                PaymentTransaction[]
+
+  @@index([clientId])
+  @@index([practitionerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([sessionDate(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("bookings")
+}
+
+// Reviews
+model Review {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId         String      @unique @db.Uuid @map("booking_id")
+  clientId          String      @db.Uuid @map("client_id")
+  practitionerId    String      @db.Uuid @map("practitioner_id")
+  rating            Int         @db.SmallInt
+  comment           String?
+  verifiedBooking   Boolean     @default(true) @map("verified_booking")
+  helpfulCount      Int         @default(0) @map("helpful_count")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  booking           Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  client            User        @relation(fields: [clientId], references: [id])
+  practitioner      Practitioner @relation("PractitionerReviews", fields: [practitionerId], references: [id])
+
+  @@index([practitionerId])
+  @@index([rating])
+  @@index([createdAt(sort: Desc)])
+  @@map("reviews")
+}
+
+// Payment transactions
+model PaymentTransaction {
+  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId           String?       @db.Uuid @map("booking_id")
+  userId              String        @db.Uuid @map("user_id")
+  amount              Decimal       @db.Decimal(10, 2)
+  paymentMethod       String?       @map("payment_method")
+  stripeTransactionId String?       @unique @map("stripe_transaction_id")
+  stripeCustomerId    String?       @map("stripe_customer_id")
+  status              PaymentStatus
+  errorMessage        String?       @map("error_message")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  booking             Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([userId])
+  @@index([status])
+  @@map("payment_transactions")
+}
+
+// Refresh tokens for auth
+model RefreshToken {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String      @db.Uuid @map("user_id")
+  tokenHash String      @map("token_hash")
+  expiresAt DateTime    @map("expires_at")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// Notifications
+model Notification {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String      @db.Uuid @map("user_id")
+  bookingId String?     @db.Uuid @map("booking_id")
+  type      String      // 'booking_confirmed', 'booking_cancelled', 'review_received', 'message'
+  title     String
+  message   String?
+  isRead    Boolean     @default(false) @map("is_read")
+  readAt    DateTime?   @map("read_at")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt(sort: Desc)])
+  @@map("notifications")
+}
